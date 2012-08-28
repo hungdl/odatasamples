@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{2F60B504-29AB-455C-B3BE-988B8265B6B3}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODataLib101.ClientHttpMessages", "ODataLib101.ClientHttpMessages\ODataLib101.ClientHttpMessages.csproj", "{E0AD7B47-0EBD-4B71-B998-FF3B4C84E35F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{EA6FBC1F-305B-4EFF-884C-0FDB7B62B8BC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ODataDemoService", "ODataDemoService", "{F5E7BDF9-B8F1-427B-BA8D-4267AA646F14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataServiceProvider", "Tests\ODataDemoService\DataServiceProvider\DataServiceProvider.csproj", "{6B6D1F18-EABE-4219-B86A-D18FB61C9DE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODataDemoService", "Tests\ODataDemoService\ODataDemo\ODataDemoService.csproj", "{80315049-E21C-4C4A-82B1-0FC0721E96CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODataLib101.ClientHttpMessages.Tests", "Tests\ODataLib101.ClientHttpMessages.Tests\ODataLib101.ClientHttpMessages.Tests.csproj", "{8D7735D7-3538-4BB4-9736-F258BA3926E6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E0AD7B47-0EBD-4B71-B998-FF3B4C84E35F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0AD7B47-0EBD-4B71-B998-FF3B4C84E35F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0AD7B47-0EBD-4B71-B998-FF3B4C84E35F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0AD7B47-0EBD-4B71-B998-FF3B4C84E35F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B6D1F18-EABE-4219-B86A-D18FB61C9DE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B6D1F18-EABE-4219-B86A-D18FB61C9DE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B6D1F18-EABE-4219-B86A-D18FB61C9DE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B6D1F18-EABE-4219-B86A-D18FB61C9DE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80315049-E21C-4C4A-82B1-0FC0721E96CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80315049-E21C-4C4A-82B1-0FC0721E96CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80315049-E21C-4C4A-82B1-0FC0721E96CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80315049-E21C-4C4A-82B1-0FC0721E96CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D7735D7-3538-4BB4-9736-F258BA3926E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D7735D7-3538-4BB4-9736-F258BA3926E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D7735D7-3538-4BB4-9736-F258BA3926E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D7735D7-3538-4BB4-9736-F258BA3926E6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F5E7BDF9-B8F1-427B-BA8D-4267AA646F14} = {EA6FBC1F-305B-4EFF-884C-0FDB7B62B8BC}
+		{8D7735D7-3538-4BB4-9736-F258BA3926E6} = {EA6FBC1F-305B-4EFF-884C-0FDB7B62B8BC}
+		{6B6D1F18-EABE-4219-B86A-D18FB61C9DE0} = {F5E7BDF9-B8F1-427B-BA8D-4267AA646F14}
+		{80315049-E21C-4C4A-82B1-0FC0721E96CC} = {F5E7BDF9-B8F1-427B-BA8D-4267AA646F14}
+	EndGlobalSection
+EndGlobal
