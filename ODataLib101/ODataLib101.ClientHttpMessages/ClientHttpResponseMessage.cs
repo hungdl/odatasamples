@@ -23,7 +23,7 @@ namespace ODataLib101.ClientHttpMessages
         /// <summary>
         /// The underlying web response object;
         /// </summary>
-        private HttpWebResponse webResponse;
+        private readonly HttpWebResponse webResponse;
 
         /// <summary>
         /// Constructor.

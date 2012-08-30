@@ -9,7 +9,7 @@
 //
 //*********************************************************
 
-namespace ODataDemo
+namespace ODataDemoService
 {
     using System;
     using System.Collections.Generic;

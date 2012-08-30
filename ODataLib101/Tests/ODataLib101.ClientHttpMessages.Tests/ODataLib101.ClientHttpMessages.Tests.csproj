@@ -67,12 +67,17 @@
     <Compile Include="ClientHttpRequestMessageTests.cs" />
     <Compile Include="ClientHttpResponseMessageTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestDemoService.cs" />
     <Compile Include="TestUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ODataLib101.ClientHttpMessages\ODataLib101.ClientHttpMessages.csproj">
       <Project>{e0ad7b47-0ebd-4b71-b998-ff3b4c84e35f}</Project>
       <Name>Microsoft.Data.OData.Samples</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODataDemoService\ODataDemo\ODataDemoService.csproj">
+      <Project>{80315049-e21c-4c4a-82b1-0fc0721e96cc}</Project>
+      <Name>ODataDemoService %28Tests\ODataDemoService\ODataDemoService%29</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

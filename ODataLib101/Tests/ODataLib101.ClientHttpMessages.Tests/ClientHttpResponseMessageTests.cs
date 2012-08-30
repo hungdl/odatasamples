@@ -10,8 +10,6 @@ namespace ODataLib101.ClientHttpMessages.Tests
     [TestClass]
     public class ClientHttpResponseMessageTests
     {
-        private static Uri serviceUrl = new Uri("http://localhost:1337/DemoDSPDataService.svc/");
-
         [TestMethod]
         public void VerifyResponseTest()
         {
@@ -28,7 +26,7 @@ namespace ODataLib101.ClientHttpMessages.Tests
             using (ODataMessageReader messageReader = new ODataMessageReader(
                 this.CreateResponseMessage(),
                 new ODataMessageReaderSettings(),
-                TestUtils.GetServiceModel(serviceUrl)))
+                TestUtils.GetServiceModel(TestDemoService.ServiceBaseUri)))
             {
                 ODataReader reader = messageReader.CreateODataEntryReader();
                 while (reader.Read())
@@ -44,14 +42,14 @@ namespace ODataLib101.ClientHttpMessages.Tests
 
 #if ODataLib101_Async
         [TestMethod]
-        public async Task VerifyCanReadResponseAsyncTestInternal()
+        public async Task VerifyCanReadResponseAsyncTest()
         {
-            IODataResponseMessageAsync responseMessage = await new ClientHttpRequestMessage(new Uri(serviceUrl, "Products(1)")).GetResponseAsync();
+            IODataResponseMessageAsync responseMessage = await new ClientHttpRequestMessage(new Uri(TestDemoService.ServiceBaseUri, "Products(1)")).GetResponseAsync();
 
             using (ODataMessageReader messageReader = new ODataMessageReader(
                 responseMessage,
                 new ODataMessageReaderSettings(),
-                TestUtils.GetServiceModel(serviceUrl)))
+                TestUtils.GetServiceModel(TestDemoService.ServiceBaseUri)))
             {
                 ODataReader reader = await messageReader.CreateODataEntryReaderAsync();
                 while (await reader.ReadAsync())
@@ -68,7 +66,7 @@ namespace ODataLib101.ClientHttpMessages.Tests
 
         private IODataResponseMessage CreateResponseMessage()
         {
-            var request = new ClientHttpRequestMessage(new Uri(serviceUrl, "Products(1)"));
+            var request = new ClientHttpRequestMessage(new Uri(TestDemoService.ServiceBaseUri, "Products(1)"));
             return request.GetResponse();
         }
     }

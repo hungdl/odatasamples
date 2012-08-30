@@ -4,25 +4,24 @@ using System.Threading.Tasks;
 #endif
 using Microsoft.Data.OData;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ODataDemoService;
 
 namespace ODataLib101.ClientHttpMessages.Tests
 {
     [TestClass]
     public class ClientHttpRequestMessageTests
     {
-        private static Uri serviceUrl = new Uri("http://localhost:1337/DemoDSPDataService.svc/");
-
         [TestMethod]
         public void CanCreateRequestTest()
         {
-            var request = new ClientHttpRequestMessage(serviceUrl);
-            Assert.AreEqual(serviceUrl, request.Url);
+            var request = new ClientHttpRequestMessage(TestDemoService.ServiceBaseUri);
+            Assert.AreEqual(TestDemoService.ServiceBaseUri, request.Url);
         }
 
         [TestMethod]
         public void SetContentTypeHeaderTest()
         {
-            TestSetHeader("Content-Type", "application/json;odata=verbose");
+            TestSetHeader("Content-Type", "application/json");
         }
 
         [TestMethod]
@@ -40,27 +39,72 @@ namespace ODataLib101.ClientHttpMessages.Tests
         [TestMethod]
         public void GetNonExistingHeaderTest()
         {
-            var request = new ClientHttpRequestMessage(serviceUrl);
+            var request = new ClientHttpRequestMessage(TestDemoService.ServiceBaseUri);
             Assert.IsNull(request.GetHeader("NonExisting"));
+        }
+
+        [TestMethod]
+        public void RemoveHeaderTest()
+        {
+            var request = new ClientHttpRequestMessage(TestDemoService.ServiceBaseUri);
+            request.SetHeader("Date", DateTime.Now.ToString());
+            request.SetHeader("Date", null);
+            Assert.IsNull(request.GetHeader("Date"));
+        }
+
+        [TestMethod]
+        public void SetAcceptHeaderCaseInsensitive()
+        {
+            var request = new ClientHttpRequestMessage(TestDemoService.ServiceBaseUri);
+            request.SetHeader("AccePT", "application/xml");
+            Assert.AreEqual("application/xml", request.GetHeader("aCCEpt"));
         }
 
         [TestMethod]
         public void SetMethodTest()
         {
-            var request = new ClientHttpRequestMessage(serviceUrl);
-            request.Method = ODataConstants.MethodGet;
-            Assert.AreEqual(ODataConstants.MethodGet, request.Method);
+            var request = new ClientHttpRequestMessage(TestDemoService.ServiceBaseUri);
+            request.Method = ODataConstants.MethodPost;
+            Assert.AreEqual(ODataConstants.MethodPost, request.Method);
+        }
+
+        [TestMethod]
+        public void SetNullMethodTest()
+        {
+            var request = new ClientHttpRequestMessage(TestDemoService.ServiceBaseUri);
+            try
+            {
+                request.Method = null;
+                Assert.Fail("Method should have failed to be set to null.");
+            }
+            catch (ArgumentException)
+            {
+            }
+        }
+
+        [TestMethod]
+        public void GetNullHeaderTest()
+        {
+            var request = new ClientHttpRequestMessage(TestDemoService.ServiceBaseUri);
+            try
+            {
+                var r = request.GetHeader(null);
+                Assert.Fail("GetHeader(null) should have failed.");
+            }
+            catch (ArgumentNullException)
+            {
+            }
         }
 
         [TestMethod]
         public void VerifyCanSendRequestPayloadSyncTest()
         {
-            var request = new ClientHttpRequestMessage(new Uri(serviceUrl, "Products"));
+            var request = new ClientHttpRequestMessage(new Uri(TestDemoService.ServiceBaseUri, "Products"));
             request.Method = ODataConstants.MethodPost;
             using (ODataMessageWriter messageWriter = new ODataMessageWriter(
                 request,
                 new ODataMessageWriterSettings(),
-                TestUtils.GetServiceModel(serviceUrl)))
+                TestUtils.GetServiceModel(TestDemoService.ServiceBaseUri)))
             {
                 ODataWriter writer = messageWriter.CreateODataEntryWriter();
                 writer.WriteStart(new ODataEntry()
@@ -84,12 +128,12 @@ namespace ODataLib101.ClientHttpMessages.Tests
         [TestMethod]
         public async Task VerifyCanSendRequestPayloadAsyncTest()
         {
-            var request = new ClientHttpRequestMessage(new Uri(serviceUrl, "Products"));
+            var request = new ClientHttpRequestMessage(new Uri(TestDemoService.ServiceBaseUri, "Products"));
             request.Method = ODataConstants.MethodPost;
             using (ODataMessageWriter messageWriter = new ODataMessageWriter(
                 request,
                 new ODataMessageWriterSettings(),
-                TestUtils.GetServiceModel(serviceUrl)))
+                TestUtils.GetServiceModel(TestDemoService.ServiceBaseUri)))
             {
                 ODataWriter writer = await messageWriter.CreateODataEntryWriterAsync();
                 await writer.WriteStartAsync(new ODataEntry()
@@ -113,7 +157,7 @@ namespace ODataLib101.ClientHttpMessages.Tests
         [TestMethod]
         public void VerifyErrorResponseProcessingSyncTest()
         {
-            var request = new ClientHttpRequestMessage(new Uri(serviceUrl, "Products?$filter=Unknown"));
+            var request = new ClientHttpRequestMessage(new Uri(TestDemoService.ServiceBaseUri, "Products?$filter=Unknown"));
             try
             {
                 request.GetResponse();
@@ -129,7 +173,7 @@ namespace ODataLib101.ClientHttpMessages.Tests
         [TestMethod]
         public async Task VerifyErrorResponseProcessingAsyncTest()
         {
-            var request = new ClientHttpRequestMessage(new Uri(serviceUrl, "Products?$filter=Unknown"));
+            var request = new ClientHttpRequestMessage(new Uri(TestDemoService.ServiceBaseUri, "Products?$filter=Unknown"));
             try
             {
                 await request.GetResponseAsync();
@@ -144,7 +188,7 @@ namespace ODataLib101.ClientHttpMessages.Tests
 
         private void TestSetHeader(string headerName, string headerValue)
         {
-            var request = new ClientHttpRequestMessage(serviceUrl);
+            var request = new ClientHttpRequestMessage(TestDemoService.ServiceBaseUri);
             request.SetHeader(headerName, headerValue);
             string storedValue = request.GetHeader(headerName);
             Assert.AreEqual(headerValue, storedValue);

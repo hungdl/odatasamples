@@ -25,7 +25,7 @@ namespace ODataLib101.ClientHttpMessages
         /// <summary>
         /// The underlying web request object.
         /// </summary>
-        private HttpWebRequest webRequest;
+        private readonly HttpWebRequest webRequest;
 
         /// <summary>
         /// Constructor.
@@ -60,6 +60,11 @@ namespace ODataLib101.ClientHttpMessages
             }
             set
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentException("Method must be a non-empty string.", "value");
+                }
+
                 this.webRequest.Method = value;
             }
         }
@@ -140,59 +145,57 @@ namespace ODataLib101.ClientHttpMessages
 
             // Some of the headers can't be set through the WebRequest.Headers collection.
             // Instead they have to be set as properties on the HttpWebRequest object.
-            switch (headerName)
+            // Note that HTTP headers are case insensitive.
+            if (string.Equals(headerName, "Accept", StringComparison.OrdinalIgnoreCase))
             {
-                case "Accept":
-                    this.webRequest.Accept = headerValue;
-                    break;
-
-                case "Content-Length":
-                    this.webRequest.ContentLength = long.Parse(headerValue);
-                    break;
-
-                case "Content-Type":
-                    this.webRequest.ContentType = headerValue;
-                    break;
-
-                case "Date":
-                    this.webRequest.Date = DateTime.Parse(headerValue);
-                    break;
-                
-                case "Expect":
-                    this.webRequest.Expect = headerValue;
-                    break;
-
-                case "Host":
-                    this.webRequest.Host = headerValue;
-                    break;
-
-                case "If-Modified-Since":
-                    this.webRequest.IfModifiedSince = DateTime.Parse(headerValue);
-                    break;
-
-                case "Referer":
-                    this.webRequest.Referer = headerValue;
-                    break;
-
-                case "Transfer-Encoding":
-                    this.webRequest.TransferEncoding = headerValue;
-                    break;
-
-                case "User-Agent":
-                    this.webRequest.UserAgent = headerValue;
-                    break;
-
-                default:
-                    if (headerValue == null)
-                    {
-                        this.webRequest.Headers.Remove(headerName);
-                    }
-                    else
-                    {
-                        this.webRequest.Headers.Set(headerName, headerValue);
-                    }
-
-                    break;
+                this.webRequest.Accept = headerValue;
+            }
+            else if (string.Equals(headerName, "Content-Length", StringComparison.OrdinalIgnoreCase))
+            {
+                this.webRequest.ContentLength = headerValue == null ? -1 : long.Parse(headerValue);
+            }
+            else if (string.Equals(headerName, "Content-Type", StringComparison.OrdinalIgnoreCase))
+            {
+                this.webRequest.ContentType = headerValue;
+            }
+            else if (string.Equals(headerName, "Date", StringComparison.OrdinalIgnoreCase))
+            {
+                this.webRequest.Date = headerValue == null ? DateTime.MinValue : DateTime.Parse(headerValue);
+            }
+            else if (string.Equals(headerName, "Expect", StringComparison.OrdinalIgnoreCase))
+            {
+                this.webRequest.Expect = headerValue;
+            }
+            else if (string.Equals(headerName, "Host", StringComparison.OrdinalIgnoreCase))
+            {
+                this.webRequest.Host = headerValue;
+            }
+            else if (string.Equals(headerName, "If-Modified-Since", StringComparison.OrdinalIgnoreCase))
+            {
+                this.webRequest.IfModifiedSince = headerValue == null ? DateTime.MinValue : DateTime.Parse(headerValue);
+            }
+            else if (string.Equals(headerName, "Referer", StringComparison.OrdinalIgnoreCase))
+            {
+                this.webRequest.Referer = headerValue;
+            }
+            else if (string.Equals(headerName, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase))
+            {
+                this.webRequest.TransferEncoding = headerValue;
+            }
+            else if (string.Equals(headerName, "User-Agent", StringComparison.OrdinalIgnoreCase))
+            {
+                this.webRequest.UserAgent = headerValue;
+            }
+            else
+            {
+                if (headerValue == null)
+                {
+                    this.webRequest.Headers.Remove(headerName);
+                }
+                else
+                {
+                    this.webRequest.Headers.Set(headerName, headerValue);
+                }
             }
         }
 
