@@ -45,7 +45,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Content\images\icons.png" />
-    <Content Include="Content\odata-query-builder-tests.css" />
     <Content Include="Content\images\msls-loader-light.gif" />
     <Content Include="Content\odata-query-builder.css" />
     <Content Include="index.html" />
