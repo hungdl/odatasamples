@@ -48,8 +48,8 @@
     <Content Include="Content\images\msls-loader-light.gif" />
     <Content Include="Content\odata-query-builder.css" />
     <Content Include="index.html" />
-    <Content Include="Scripts\datajs-1.1.0.js" />
-    <Content Include="Scripts\datajs-1.1.0.min.js" />
+    <Content Include="Scripts\datajs-1.1.1.js" />
+    <Content Include="Scripts\datajs-1.1.1.min.js" />
     <Content Include="Scripts\odata-query-builder.js" />
   </ItemGroup>
   <ItemGroup />
