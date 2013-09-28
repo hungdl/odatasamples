@@ -29,6 +29,7 @@ See the Apache Version 2.0 License for specific language governing permissions a
     <script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.0.min.js"></script>
     <script type="text/javascript" src="Scripts/datajs-1.1.1.min.js"></script>
     <script type="text/javascript" src="Scripts/odata-query-builder.js"></script>
+    <script type="text/javascript" src="Scripts/metadata/ODataMetadata.js"></script>
     <script type="text/javascript">
         // Document ready event handler.
         $(document).ready(function () {
@@ -40,7 +41,12 @@ See the Apache Version 2.0 License for specific language governing permissions a
                     },
                     {
                         name: 'OData',
-                        url: 'http://services.odata.org/OData/OData.svc/'
+                        url: 'http://odataservices.azurewebsites.net/OData/OData.svc'
+                    },
+                    {
+                        name: 'OData (Cached)',
+                        url: 'http://odataservices.azurewebsites.net/OData/OData.svc',
+                        provider: function () { return ODataMetadata; }
                     },
                 ]);
         });
