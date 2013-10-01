@@ -1,0 +1,2 @@
+﻿
+<%@ ServiceHost Language="C#" Factory="System.Data.Services.DataServiceHostFactory" Service="Microsoft.Test.OData.Services.AstoriaDefaultService.ServiceWithAccessRestrictions" %>

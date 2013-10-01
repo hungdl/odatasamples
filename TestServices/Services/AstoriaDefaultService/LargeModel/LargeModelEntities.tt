@@ -1,0 +1,103 @@
+﻿//
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+//
+// Owner:        artrejo
+// Backup Owner: jawelton
+//
+<#@ template debug="true" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+<#const int NumberOfEntityTypes = 400;#>
+<#const int NumberOfRelationshipsPerEntity = 100;#>
+<#const int NumberOfInstancesPerEntitySet = 10;#>
+
+namespace Microsoft.Test.OData.Services.LargeModel
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Data.Services.Common;
+    using System.Linq;
+<#
+	for (var entity = 0; entity<NumberOfEntityTypes; entity++)
+	{
+#>
+
+    [DataServiceKey("Id")]
+    public class Entity<#=entity#>
+    {
+        public Int32 Id { get; set; }
+
+<#
+		for (var relationship=0; relationship<NumberOfRelationshipsPerEntity; relationship++)
+		{
+			var relatedEntity = relationship % NumberOfEntityTypes;
+#>
+		public Entity<#=relatedEntity#> Relationship<#=relationship#> { get; set; }
+<#
+		}
+#>
+
+        public static List<Entity<#=entity#>> ListOfEntities { get; set; }
+
+		static Entity<#=entity#>()
+		{
+			InitializeEntities();
+			InitializeRelationships();
+		}
+
+		public static void InitializeEntities()
+		{
+			ListOfEntities =  new List<Entity<#=entity#>>
+	        {
+<#
+			for (var instance=0; instance<NumberOfInstancesPerEntitySet; instance++)
+			{
+#>
+				new Entity<#=entity#> { Id = <#=instance#> },
+<#
+			}
+#>
+			};
+        }
+		
+		public static void InitializeRelationships()
+		{
+<#
+			for (var instance=0; instance<NumberOfInstancesPerEntitySet; instance++)
+			{
+				for (var relationship=0; relationship<NumberOfRelationshipsPerEntity; relationship++)
+				{
+					var relatedEntity = relationship % NumberOfEntityTypes;
+#>
+			ListOfEntities[<#=instance#>].Relationship<#=relationship#> = Entity<#=relatedEntity#>.ListOfEntities[0];
+<#
+				}
+#>
+
+<#
+			}
+#>
+        }
+
+    }
+<#
+	}
+#>
+
+	public class LargeModelContext
+    {
+<#
+	for (var entity = 0; entity<NumberOfEntityTypes; entity++)
+	{
+#>
+        public IQueryable<Entity<#=entity#>> Set<#=entity#> 
+		{ 
+			get 
+			{ 
+				return Entity<#=entity#>.ListOfEntities.AsQueryable(); 
+			} 
+		}
+<#
+	}
+#>
+    }
+}

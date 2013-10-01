@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1211B700-008A-4646-8F5F-25BC96EBC138}</ProjectGuid>
+    <ProjectTypeGuids>{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.Test.OData.Framework.TestProviders</RootNamespace>
+    <AssemblyName>Microsoft.Test.OData.Framework.TestProviders</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <IncludeStyleCop>true</IncludeStyleCop>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Data.Edm, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\External\Packages\Microsoft.Data.Edm.5.6.0\lib\net40\Microsoft.Data.Edm.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Data.OData, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\External\Packages\Microsoft.Data.OData.5.6.0\lib\net40\Microsoft.Data.OData.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Data.Services, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\External\Packages\Microsoft.Data.Services.5.6.0\lib\net40\Microsoft.Data.Services.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Data.Services.Client, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\External\Packages\Microsoft.Data.Services.Client.5.6.0\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System" />
+    <Reference Include="System.Spatial, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\External\Packages\System.Spatial.5.6.0\lib\net40\System.Spatial.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\DataServiceProviderMethodsReplacementStrategy.cs" />
+    <Compile Include="Common\LazyResourceType.cs" />
+    <Compile Include="Common\MethodReplacingExpressionVisitor.cs" />
+    <Compile Include="Common\OpenTypeMethodsReplacementStrategy.cs" />
+    <Compile Include="Common\PseudoDistanceImplementation.cs" />
+    <Compile Include="Common\ResourceTypeExtensions.cs" />
+    <Compile Include="Common\StaticMethodReplacementStrategyBase.cs" />
+    <Compile Include="Contracts\IMethodReplacementStrategy.cs" />
+    <Compile Include="Dictionary\DefaultDataServiceProviderMethodsReplacementStrategy.cs" />
+    <Compile Include="Dictionary\DictionaryDataContext.cs" />
+    <Compile Include="Dictionary\DictionaryMetadataHelper.cs" />
+    <Compile Include="Dictionary\MethodReplacingQueryProvider.cs" />
+    <Compile Include="Dictionary\RealisticOpenTypeMethodsReplacementStrategy.cs" />
+    <Compile Include="Dictionary\ResourceInstance.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="OptionalProviders\TestDataServiceActionProvider.cs" />
+    <Compile Include="OptionalProviders\TestDataServiceInvokable.cs" />
+    <Compile Include="Common\ExceptionUtilities.cs" />
+    <Compile Include="Common\ReferenceEqualityComparer.cs" />
+    <Compile Include="Common\UpdatableToken.cs" />
+    <Compile Include="Contracts\DataOracle\IDataServiceDataSourceCreator.cs" />
+    <Compile Include="Contracts\DataServiceActionProviderOverrides.cs" />
+    <Compile Include="Contracts\DataServiceOverrides.cs" />
+    <Compile Include="Contracts\DataServiceUpdatable2Overrides.cs" />
+    <Compile Include="Contracts\ProviderImplementationSettings.cs" />
+    <Compile Include="Contracts\WithDisposableAction.cs" />
+    <Compile Include="OptionalProviders\InMemoryStreamProvider`1.cs" />
+    <Compile Include="OptionalProviders\ReusableStream.cs" />
+    <Compile Include="OptionalProviders\StreamWrapper.cs" />
+    <Compile Include="Reflection\NavigationPropertyInfo.cs" />
+    <Compile Include="Reflection\ReflectionDataContext.cs" />
+    <Compile Include="Reflection\ReflectionMetadataHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+</Project>
