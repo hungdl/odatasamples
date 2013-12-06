@@ -20,7 +20,10 @@ OData.explorer.constants = OData.explorer.constants || {};
 OData.explorer.constants.queryTimeout = 30 * 1000;
 OData.explorer.constants.defaultTop = 20;
 OData.explorer.constants.displayErrorMessageDuration = 20 * 1000;
-    
+
+// The version.
+OData.explorer.version = "1.1.0";
+
 /// <summary>
 /// Extends the built in String class with a format function if one is not already defined.
 /// <code>
@@ -44,9 +47,7 @@ if (!String.prototype.format) {
 /// <param name="child" type="Method">The child method who will get a copy of the parent's prototype.</param>
 /// <returns type="Method">The augmented child method is returned.</returns>
 OData.extend = function (base, child) {
-    function f() { };
-    f.prototype = base.prototype;
-    child.prototype = new f();
+    child.prototype = new base();
     child.prototype.constructor = child;
     child.base = base.prototype;
     return child;
@@ -79,7 +80,19 @@ OData.explorer._cleanODataEndpointUrl = function (url) {
 /// Where clause filter options base class.
 /// </summary>
 OData.explorer.FilterOptions = function () {
+    this.options = {
+        encodeUrlComponents: false
+    };
     this.values = [];
+};
+
+/// <summary>
+/// Where clause filter base class init method.
+/// </summary>
+OData.explorer.FilterOptions.prototype.init = function (options) {
+    for (var name in options) {
+        this.options[name] = options[name];
+    }
 };
 
 /// <summary>
@@ -112,8 +125,10 @@ OData.explorer.FilterOptions.prototype.getWhereQuery = function (propertiesListN
     // Example: alert( escape("http://hello ' world") ); // displays: http%3A//hello%20%27%27%20world
     // First replace all the ' with '' (not ").
     value = String(value).replace(new RegExp("'", 'g'), "''");
-    // Finally escape the value.
-    value = escape(value);
+    // Finally encode the value.
+    if (this.options.encodeUrlComponents) {
+        value = encodeURIComponent(value);
+    }
 
     var filter = this.values[filterId];
 
@@ -180,7 +195,8 @@ OData.explorer.FilterOptions.prototype.createNavigationNoMultiplicityWhereQuery 
 /// <summary>
 /// Null where clause filter class.
 /// </summary>
-OData.explorer.NullFilterOptions = OData.extend(OData.explorer.FilterOptions, function () {
+OData.explorer.NullFilterOptions = OData.extend(OData.explorer.FilterOptions, function (options) {
+    this.init(options);
     this.values = [
            { errorMessage: 'You are not able to query on this property.' }
     ];
@@ -196,7 +212,8 @@ OData.explorer.NullFilterOptions.prototype.getWhereQuery = function () {
 /// <summary>
 /// Boolean where clause filter class.
 /// </summary>
-OData.explorer.BooleanFilterOptions = OData.extend(OData.explorer.FilterOptions, function () {
+OData.explorer.BooleanFilterOptions = OData.extend(OData.explorer.FilterOptions, function (options) {
+    this.init(options);
     this.values = [
             { displayName: 'is true', stringFormat: '{0} eq true', inputType: false },
             { displayName: 'is false', stringFormat: '{0} eq false', inputType: false }
@@ -206,7 +223,8 @@ OData.explorer.BooleanFilterOptions = OData.extend(OData.explorer.FilterOptions,
 /// <summary>
 /// FloatingPoint where clause filter class.
 /// </summary>
-OData.explorer.FloatingPointFilterOptions = OData.extend(OData.explorer.FilterOptions, function () {
+OData.explorer.FloatingPointFilterOptions = OData.extend(OData.explorer.FilterOptions, function (options) {
+    this.init(options);
     this.values = [
             { displayName: 'round equals', stringFormat: 'round({0}) eq {1}', inputType: 'int' },
             { displayName: 'floor equals', stringFormat: 'floor({0}) eq {1}', inputType: 'int' },
@@ -223,7 +241,8 @@ OData.explorer.FloatingPointFilterOptions = OData.extend(OData.explorer.FilterOp
 /// <summary>
 /// Integer where clause filter class.
 /// </summary>
-OData.explorer.IntegerFilterOptions = OData.extend(OData.explorer.FilterOptions, function () {
+OData.explorer.IntegerFilterOptions = OData.extend(OData.explorer.FilterOptions, function (options) {
+    this.init(options);
     this.values = [
             { displayName: 'equals', stringFormat: '{0} eq {1}', inputType: 'int' },
             { displayName: 'not equals', stringFormat: '{0} ne {1}', inputType: 'int' },
@@ -237,7 +256,8 @@ OData.explorer.IntegerFilterOptions = OData.extend(OData.explorer.FilterOptions,
 /// <summary>
 /// Date and time where clause filter class.
 /// </summary>
-OData.explorer.DateTimeFilterOptions = OData.extend(OData.explorer.FilterOptions, function () {
+OData.explorer.DateTimeFilterOptions = OData.extend(OData.explorer.FilterOptions, function (options) {
+    this.init(options);
     this.values = [
             {
                 displayName: 'before',
@@ -312,7 +332,9 @@ OData.explorer.DateTimeFilterOptions.prototype.getWhereQuery = function (propert
 /// <summary>
 /// GUID where clause filter class.
 /// </summary>
-OData.explorer.GuidFilterOptions = OData.extend(OData.explorer.FilterOptions, function () {
+/// <param name="options">The options object.</param>
+OData.explorer.GuidFilterOptions = OData.extend(OData.explorer.FilterOptions, function (options) {
+    this.init(options);
     this.values = [
             { displayName: 'equals', stringFormat: "{0} eq guid'{1}'", inputType: 'guid' },
             { displayName: 'not equals', stringFormat: "{0} ne guid'{1}'", inputType: 'guid' }
@@ -322,10 +344,13 @@ OData.explorer.GuidFilterOptions = OData.extend(OData.explorer.FilterOptions, fu
 /// <summary>
 /// String where clause filter class.
 /// </summary>
-OData.explorer.StringFilterOptions = OData.extend(OData.explorer.FilterOptions, function () {
+/// <param name="options">The options object.</param>
+OData.explorer.StringFilterOptions = OData.extend(OData.explorer.FilterOptions, function (options) {
+    this.init(options);
     this.values = [
             { displayName: 'equals', stringFormat: "{0} eq '{1}'", inputType: 'string' },
             { displayName: 'not equals', stringFormat: "{0} ne '{1}'", inputType: 'string' },
+            { displayName: 'in (; separated)', stringFormat: "{0} eq '{1}'", inputType: 'string' },
             { displayName: 'case-insensitive equals', stringFormat: "tolower({0}) eq tolower('{1}')", inputType: 'string' },
             { displayName: 'case-insensitive does not equal', stringFormat: "tolower({0}) eq tolower('{1}')", inputType: 'string' },
             { displayName: 'starts with', stringFormat: "startswith({0}, '{1}') eq true", inputType: 'string' },
@@ -338,24 +363,53 @@ OData.explorer.StringFilterOptions = OData.extend(OData.explorer.FilterOptions, 
 });
 
 /// <summary>
+/// Gets the where query for String objects.
+/// </summary>
+/// <param name="propertiesListNames">The list of property names.</param>
+/// <param name="filterId">The id of the filter.</param>
+/// <param name="value">The value of the property.</param>
+/// <param name="propertiesListMultiplicityIsTrue">Multiplicity check.</param>
+OData.explorer.StringFilterOptions.prototype.getWhereQuery = function (propertiesList, filterId, value, propertiesListMultiplicityIsTrue) {
+    var index = parseInt(filterId);
+    var filter = this.values[index];
+
+    switch (filter.displayName) {
+        case 'in (; separated)': {
+            var valueSegments = value.split(';');
+            var finalValue = [];
+            for (var i = 0; i < valueSegments.length; i++) {
+                finalValue.push(OData.explorer.StringFilterOptions.base.getWhereQuery.call(
+                                this, propertiesList, filterId, valueSegments[i].trim(), propertiesListMultiplicityIsTrue));
+            }
+
+            return finalValue.join(' or ');
+        }
+    }
+
+    return OData.explorer.StringFilterOptions.base.getWhereQuery.call(
+        this, propertiesList, filterId, value, propertiesListMultiplicityIsTrue);
+};
+
+/// <summary>
 /// Where clause filter class.
 /// </summary>
-OData.explorer.WhereFilterOptions = function () {
-    this['Null'] = new OData.explorer.NullFilterOptions();
-    this['Edm.Boolean'] = new OData.explorer.BooleanFilterOptions();
+/// <param name="options">The options object.</param>
+OData.explorer.WhereFilterOptions = function (options) {
+    this['Null'] = new OData.explorer.NullFilterOptions(options);
+    this['Edm.Boolean'] = new OData.explorer.BooleanFilterOptions(options);
     this['Edm.Decimal'] =
         this['Edm.Single'] =
-        this['Edm.Double'] = new OData.explorer.FloatingPointFilterOptions();
+        this['Edm.Double'] = new OData.explorer.FloatingPointFilterOptions(options);
     this['Edm.Byte'] =
         this['Edm.SByte'] =
         this['Edm.Int16'] =
         this['Edm.Int32'] =
-        this['Edm.Int64'] = new OData.explorer.IntegerFilterOptions();
+        this['Edm.Int64'] = new OData.explorer.IntegerFilterOptions(options);
     this['Edm.Time'] =
         this['Edm.DateTime'] =
-        this['Edm.DateTimeOffset'] = new OData.explorer.DateTimeFilterOptions();
-    this['Edm.Guid'] = new OData.explorer.GuidFilterOptions();
-    this['Edm.String'] = new OData.explorer.StringFilterOptions();
+        this['Edm.DateTimeOffset'] = new OData.explorer.DateTimeFilterOptions(options);
+    this['Edm.Guid'] = new OData.explorer.GuidFilterOptions(options);
+    this['Edm.String'] = new OData.explorer.StringFilterOptions(options);
 };
 
 /// <summary>
@@ -379,10 +433,13 @@ OData.explorer.WhereFilterOptions.prototype.getFilterHandler = function (type) {
 /// <param name="oDataUrlEndpoint">The URL of the service endpoint to read the metadata from.</param>
 /// <param name ="metadataInput" type="Object">The metadata associated with the endpoint. 
 /// If this parameter is passed, we will use it to generate the querybuilder without fetching from the service.</param>
-OData.explorer.QueryBuilder = function (oDataUrlEndpoint, metadataInput) {
+/// <param name="options">The options object.</param>
+OData.explorer.QueryBuilder = function (oDataUrlEndpoint, metadataInput, options) {
     if (!oDataUrlEndpoint) {
         throw 'You must specify the OData service endpoint URL.';
     }
+
+    this.options = options || {};
 
     // Constants.
     this.multiplicityValues = ["0..1", "1", "*"];
@@ -405,7 +462,9 @@ OData.explorer.QueryBuilder = function (oDataUrlEndpoint, metadataInput) {
     this.whereFilterId = 0;
     this.whereFilter = [];
     this.orderByPropertyList = [];
-    this.filterOptions = new OData.explorer.WhereFilterOptions();
+    this.columnsList = [];
+    this.expandList = [];
+    this.filterOptions = new OData.explorer.WhereFilterOptions(this.options);
 
     if (this.metadata) {
         this._updateMetadata(this.metadata);
@@ -460,6 +519,8 @@ OData.explorer.QueryBuilder.prototype._updateMetadata = function (someMetadata) 
     this.whereFilterId = 0;
     this.whereFilter = [];
     this.orderByPropertyList = [];
+    this.columnsList = [];
+    this.expandList = [];
 };
 
 /// <summary>
@@ -486,6 +547,23 @@ OData.explorer.QueryBuilder.prototype.setSelectedEntityId = function (entityId) 
     this.selectedEntityId = entityId;
 };
 
+/// <summary>
+/// Add/Change/Remove a property from the expand filter in the OData query.
+/// </summary>
+/// <param name ="propertyId" type="Integer">The property id.</param>
+/// <param name ="val" type="Integer">0 = remove, 1 = add</param>
+OData.explorer.QueryBuilder.prototype.setExpandProperty = function (propertyId, val) {
+    this._setPropertyValueInArray(this.expandList, propertyId, val);
+};
+
+/// <summary>
+/// Add/Change/Remove a property from the select filter in the OData query.
+/// </summary>
+/// <param name ="propertyId" type="Integer">The property id.</param>
+/// <param name ="val" type="Integer">0 = remove, 1 = add</param>
+OData.explorer.QueryBuilder.prototype.setSelectColumnProperty = function (propertyId, val) {
+    this._setPropertyValueInArray(this.columnsList, propertyId, val);
+};
 
 /// <summary>
 /// Add/Change/Remove a property from the orderby filter in the OData query.
@@ -497,33 +575,57 @@ OData.explorer.QueryBuilder.prototype.setOrderByProperty = function (propertyId,
         throw 'Not acceptable sorting value: ' + val;
     }
 
+    this._setPropertyValueInArray(this.orderByPropertyList, propertyId, val);
+};
+
+/// <summary>
+/// Add/Change/Remove a property from the orderby filter in the OData query.
+/// </summary>
+/// <param name ="array" type="array">The array.</param>
+/// <param name ="propertyId" type="Integer">The property id.</param>
+/// <param name ="val" type="Integer">0 = do not sort on this property, 1 = sort asc, 2 = sort desc</param>
+OData.explorer.QueryBuilder.prototype._setPropertyValueInArray = function (array, propertyId, val) {
     // Try to see if the property is already in the array.
-    for (var i in this.orderByPropertyList) {
-        if (this.orderByPropertyList[i].propertyId == propertyId) {
+    for (var i in array) {
+        if (array[i].propertyId == propertyId) {
             // Remove the property from the array.
             if (val == 0) {
-                this.orderByPropertyList.splice(i, 1);
+                array.splice(i, 1);
             } else { // Change the value of the property in the array.
-                this.orderByPropertyList[i].value = val;
+                array[i].value = val;
             }
             return;
         }
     }
 
     // Add new one.
-    var orderByClause = {
+    var element = {
         propertyId: propertyId,
         value: val
     };
 
-    this.orderByPropertyList.push(orderByClause);
+    array.push(element);
+};
+
+/// <summary>
+/// Clear the expand filter list.
+/// </summary>
+OData.explorer.QueryBuilder.prototype.clearExpandProperty = function () {
+    this.expandList.length = 0;
+};
+
+/// <summary>
+/// Clear the select filter list.
+/// </summary>
+OData.explorer.QueryBuilder.prototype.clearSelectColumnsProperty = function () {
+    this.columnsList.length = 0;
 };
 
 /// <summary>
 /// Clear the orderby filter list.
 /// </summary>
 OData.explorer.QueryBuilder.prototype.clearOrderByProperty = function () {
-    this.orderByPropertyList = [];
+    this.orderByPropertyList.length = 0;
 };
 
 /// <summary>
@@ -739,7 +841,20 @@ OData.explorer.QueryBuilder.prototype._getNumberOfLevelOfInheritance = function 
 /// <param name ="entityId" type="Integer">The entity id.</param>
 /// <param name ="onlyProperties" type="Boolean">If true it will not return navigation properties.</param>
 /// <returns type="Array">An array with the properties and navigation properties (if onlyProperties != false).</returns>
-OData.explorer.QueryBuilder.prototype.getQueryPropertiesAndNavigationPropertiesForEntity = function (entityId, onlyProperties) {
+OData.explorer.QueryBuilder.prototype.getQueryPropertiesAndNavigationPropertiesForEntity = function (entityId) {
+    var properties = this.getQueryPropertiesForEntity(entityId);
+    var navigationProps = this.getQueryNavigationPropertiesForEntity(entityId);
+
+    var keys = properties.concat(navigationProps);
+
+    return keys.sort(this._sortDictionaryByValueComparator);
+};
+
+/// <summary>
+/// Return the properties.
+/// </summary>
+/// <param name ="entityId" type="Integer">The entity id.</param>
+OData.explorer.QueryBuilder.prototype.getQueryPropertiesForEntity = function (entityId) {
     var keys = [];
     var index = 0;
 
@@ -753,16 +868,27 @@ OData.explorer.QueryBuilder.prototype.getQueryPropertiesAndNavigationPropertiesF
         });
     }
 
-    if (!onlyProperties) {
-        var navigationProps = this._getNavigationPropertyNamesForEntity(entityId);
-        for (var i = 0, l = navigationProps.length; i < l; i++) {
-            keys.push({
-                key: index++,
-                value: navigationProps[i].value,
-                id: navigationProps[i].key,
-                type: "navigationProperty"
-            });
-        }
+    return keys.sort(this._sortDictionaryByValueComparator);
+};
+
+/// <summary>
+/// Return the navigation properties.
+/// </summary>
+/// <param name ="entityId" type="Integer">The entity id.</param>
+OData.explorer.QueryBuilder.prototype.getQueryNavigationPropertiesForEntity = function (entityId) {
+    var keys = [];
+
+    // The index for navigations start after the properties!
+    var index = this._getPropertyNamesForEntity(entityId).length;
+
+    var navigationProps = this._getNavigationPropertyNamesForEntity(entityId);
+    for (var i = 0, l = navigationProps.length; i < l; i++) {
+        keys.push({
+            key: index++,
+            value: navigationProps[i].value,
+            id: navigationProps[i].key,
+            type: "navigationProperty"
+        });
     }
 
     return keys.sort(this._sortDictionaryByValueComparator);
@@ -925,9 +1051,10 @@ OData.explorer.QueryBuilder.prototype._getNavigationPropertyNamesForEntity = fun
 /// <param name ="navPropId" type="Integer">The navigation property id.</param>
 /// <returns type="Object">The entity's navigation property.</returns>
 OData.explorer.QueryBuilder.prototype._getNavigationPropertyForEntity = function (entityId, navPropId) {
+    var index = this._getPropertyNamesForEntity(entityId).length;
     var navigationProperties = this._getAcceptableNavigationProperties(entityId);
 
-    return navigationProperties[navPropId];
+    return navigationProperties[navPropId - index];
 };
 
 /// <summary>
@@ -978,41 +1105,73 @@ OData.explorer.QueryBuilder.prototype.getGeneratedODataQueryUrl = function () {
         url += '$filter=' + queryFiltersString + '&';
     }
 
-    if (this.orderByPropertyList && this.orderByPropertyList.length > 0 &&
-        typeof this.selectedEntityId !== "undefined" && this.selectedEntityId != null) {
-        url += '$orderby=';
+    if (typeof this.selectedEntityId !== "undefined" && this.selectedEntityId != null) {
+        if (this.orderByPropertyList && this.orderByPropertyList.length > 0) {
+            url += '$orderby=';
 
-        var sortingOptions = [];
+            var sortingOptions = [];
 
-        for (var i in this.orderByPropertyList) {
-            var propertyId = this.orderByPropertyList[i].propertyId;
-            var value = this.orderByPropertyList[i].value;
-            var propertyName = this._getPropertyForEntity(this.selectedEntityId, propertyId).name;
+            for (var i in this.orderByPropertyList) {
+                var propertyId = this.orderByPropertyList[i].propertyId;
+                var value = this.orderByPropertyList[i].value;
+                var propertyName = this._getPropertyForEntity(this.selectedEntityId, propertyId).name;
 
-            if (propertyName) {
-                switch (value) {
-                    case 0: {
-                        // Do not order by this propertyId.
-                        break;
-                    }
-                    case 1: {
-                        // Sort in asc order.
-                        sortingOptions.push(propertyName);
-                        break;
-                    }
-                    case 2: {
-                        // Sort in desc order.
-                        sortingOptions.push(propertyName + ' desc');
-                        break;
+                if (propertyName) {
+                    switch (value) {
+                        case 0: {
+                            // Do not order by this propertyId.
+                            break;
+                        }
+                        case 1: {
+                            // Sort in asc order.
+                            sortingOptions.push(propertyName);
+                            break;
+                        }
+                        case 2: {
+                            // Sort in desc order.
+                            sortingOptions.push(propertyName + ' desc');
+                            break;
+                        }
                     }
                 }
             }
+
+            // Separate the elements with a comma ',' and add the '&' at the end.
+            url += sortingOptions.join() + '&';
         }
 
-        // Separate the elements with a comma ',' and add the '&' at the end.
-        url += sortingOptions.join() + '&';
-    }
+        if (this.columnsList && this.columnsList.length > 0) {
+            url += '$select=';
 
+            var selectOptions = [];
+
+            for (var i in this.columnsList) {
+                var propertyId = this.columnsList[i].propertyId;
+                var propertyName = this._getPropertyForEntity(this.selectedEntityId, propertyId).name;
+
+                selectOptions.push(propertyName);
+            }
+
+            // Separate the elements with a comma ',' and add the '&' at the end.
+            url += selectOptions.join() + '&';
+        }
+
+        if (this.expandList && this.expandList.length > 0) {
+            url += '$expand=';
+
+            var expandOptions = [];
+
+            for (var i in this.expandList) {
+                var navigationPropertyId = this.expandList[i].propertyId;
+                var navigationPropertyName = this._getNavigationPropertyForEntity(this.selectedEntityId, navigationPropertyId).name;
+
+                expandOptions.push(navigationPropertyName);
+            }
+
+            // Separate the elements with a comma ',' and add the '&' at the end.
+            url += expandOptions.join() + '&';
+        }
+    }
 
     // Remove the & at the end.
     var lastUrlCharIndex = url.length - 1;
@@ -1089,11 +1248,13 @@ OData.explorer.QueryBuilder.prototype.addOrUpdateWhereFilter = function (specifi
 /// Return a standardized array of objects for the array passed as a parameter.
 /// </summary>
 /// <param name ="obj" type="Array">A list of objects with a name property.</param>
+/// <param name ="startIndex" type="int">The starting index number.</param>
 /// <returns type="Array">A standardized array of objects for the array passed as a parameter.</returns>
-OData.explorer.QueryBuilder.prototype._getNamesValueFromObject = function (obj) {
+OData.explorer.QueryBuilder.prototype._getNamesValueFromObject = function (obj, startIndex) {
+    startIndex = startIndex || 0;
     var keys = [];
-    for (var i in obj) {
-        keys.push({ key: i, value: obj[i].name, object: obj[i] });
+    for (var i = 0, l = obj.length; i < l; i++) {
+        keys.push({ key: i + startIndex, value: obj[i].name, object: obj[i] });
     }
     return keys;
 };
@@ -1122,7 +1283,7 @@ OData.explorer.QueryBuilder.prototype._getWhereQueryFilter = function (whereFilt
 
             switch (element.type) {
                 case 'navigationProperty':
-                    var navigationProperty = this._getNavigationPropertyForEntity(referringEntityId, element.id);
+                    var navigationProperty = this._getNavigationPropertyForEntity(referringEntityId, element.key);
                     var multiplicity = this._getNavigationPropertyMultiplicity(navigationProperty);
                     if (multiplicity <= 1) {
                         propertiesListMultiplicityIsTrue.push(false);
@@ -1170,7 +1331,7 @@ OData.explorer.QueryBuilder.prototype._getNavigationPropertyMultiplicity = funct
         return undefined;
     }
 
-    var correctAssociation = this._getAssociationFromAssociationSetName(correctAssociationSet.name);
+    var correctAssociation = this._getAssociationFromAssociationSet(correctAssociationSet);
     var multiplicity;
 
     if (!correctAssociation) {
@@ -1206,17 +1367,17 @@ OData.explorer.QueryBuilder.prototype._getAssociationSetFromRelationshipName = f
 };
 
 /// <summary>
-/// Return the association for the associacion set.
+/// Return the association for the association set.
 /// </summary>
-/// <param name ="relationshipName" type="String">The associacion set name.</param>
-/// <returns type="String">The association for the associacion set.</returns>
-OData.explorer.QueryBuilder.prototype._getAssociationFromAssociationSetName = function (associacionSetName) {
-    if (!associacionSetName) {
+/// <param name ="associationSet" type="String">The association set.</param>
+/// <returns type="String">The association for the association set.</returns>
+OData.explorer.QueryBuilder.prototype._getAssociationFromAssociationSet = function (associationSet) {
+    if (!associationSet) {
         return undefined;
     }
 
     for (var i = this.association.length - 1; i >= 0; i--) {
-        if (this.association[i].name == associacionSetName) {
+        if (this.namespace + '.' + this.association[i].name == associationSet.association) {
             return this.association[i];
         }
     }
@@ -1320,19 +1481,40 @@ OData.explorer.QueryBuilder.prototype._getEntitySetQueryNameFromEntityName = fun
 /// <summary>
 /// DataExplorer class which constructs the query builder and loads the query results.
 /// </summary>
-/// <param name="endpoints">
-/// One or more URLs, plus optional additional data, that the control can access data from.
-/// The parameter can be a single object containing a URL string or an array of multiple such objects.
-/// The object format is { url: 'http://...', name: 'My OData Service', 
+/// <param name="options">
+/// Required: an array containing the different endpoints.
+/// Optionals true|false parameters: 
+///     encodeUrlComponents, hideOrderbyFilters, hideColumnFilters, hideExpandFilters
+/// Optional override methods (examples):
+///     onUrlChange: function (url) { }
+///     onSubmit: function (url) { return url; }
+///     onResults: function (data) { return data; }
+///     onError: function (error, url) { }
 /// </param>
-OData.explorer.DataExplorer = function (endpoints) {
-    var endpointsType = typeof endpoints;
-    if (!endpoints || (!endpoints.url && (!$.isArray(endpoints) || endpoints.length === 0))) {
+OData.explorer.DataExplorer = function (options) {
+    if (!options) {
+        throw 'You must specify at least one parameter.';
+    }
+
+    this.options = {};
+
+    // Set the options.
+    if (options) {
+        for (var option in options) {
+            this.options[option] = options[option];
+        }
+    }
+
+    if (options.url || $.isArray(options) && options.length !== 0) {
+        // The options is the array of endpoints.
+        this.options.endpoints = options;
+    } else if (!options.endpoints ||
+        (!options.endpoints.url && (!$.isArray(options.endpoints) || options.endpoints.length === 0))) {
         throw 'You must specify at least one endpoint URL.';
     }
 
     this.defaultTop = OData.explorer.constants.defaultTop;
-    this.endpoints = endpoints.url ? [endpoints] : endpoints;
+    this.endpoints = this.options.endpoints.url ? [this.options.endpoints] : this.options.endpoints;
 
     // Find or create the container.
     this.$container = $('#queryBuilderContainer');
@@ -1356,24 +1538,42 @@ OData.explorer.DataExplorer = function (endpoints) {
             '<label for="entities">Select:</label><select id="top"></select>',
             '<select id="entities"></select>',
             '<div id="filtersConditions">',
-                '<div id="whereConditions">',
-                    '<label id="where">Where:</label><button id="addCondition">+</button>',
+                '<div id="whereConditions" class="filterContainer">',
+                    '<label class="filterLabel">Where:</label><button id="addCondition" class="addCondition">+</button>',
                 '</div>',
-                '<div id="orderByConditions">',
-                    '<label id="orderBy">Order by:</label><button id="addOrderByCondition">+</button>',
-                    '<span id="orderByFiltersList"></span> ',
+                '<div id="orderByConditions" class="filterContainer">',
+                    '<label class="filterLabel">Order by:</label><button id="addOrderByCondition" class="addCondition">+</button>',
+                    '<span id="orderByFiltersList" class="filterList"></span> ',
+                '</div>',
+                '<div id="selectConditions" class="filterContainer">',
+                    '<label class="filterLabel">Columns:</label><button id="addSelectCondition" class="addCondition">+</button>',
+                    '<span id="selectFiltersList" class="filterList"></span> ',
+                '</div>',
+                '<div id="expandConditions" class="filterContainer">',
+                    '<label class="filterLabel">Expand:</label><button id="addExpandCondition" class="addCondition">+</button>',
+                    '<span id="expandFiltersList" class="filterList"></span> ',
                 '</div>',
             '</div>',
             '<div><a id="queryUrl" href="/" target="_blank"></a></div>',
         '</div>'].join('')));
     this.$whereConditions = $('#whereConditions', $queryBuilderForm);
+
     this.$orderByConditions = $('#orderByConditions', $queryBuilderForm);
+    this.$addOrderByCondition = $('#addOrderByCondition', $queryBuilderForm);
     this.$orderByFiltersList = $('#orderByFiltersList', $queryBuilderForm);
+
+    this.$selectConditions = $('#selectConditions', $queryBuilderForm);
+    this.$addSelectCondition = $('#addSelectCondition', $queryBuilderForm);
+    this.$selectFiltersList = $('#selectFiltersList', $queryBuilderForm);
+
+    this.$expandConditions = $('#expandConditions', $queryBuilderForm);
+    this.$addExpandCondition = $('#addExpandCondition', $queryBuilderForm);
+    this.$expandFiltersList = $('#expandFiltersList', $queryBuilderForm);
+
     this.$filtersConditions = $('#filtersConditions', $queryBuilderForm);
     this.$entities = $('#entities', $queryBuilderForm);
     this.$queryFilters = $('#queryFilters', $queryBuilderForm);
     this.$addCondition = $('#addCondition', $queryBuilderForm);
-    this.$addOrderByCondition = $('#addOrderByCondition', $queryBuilderForm);
     this.$queryUrl = $('#queryUrl', $queryBuilderForm);
     this.$top = $('#top', $queryBuilderForm);
     this.$skip = $('#skip', $queryBuilderForm);
@@ -1388,9 +1588,9 @@ OData.explorer.DataExplorer = function (endpoints) {
         this.$top);
     this.$endpoints = $('#endpoints', $queryBuilderForm);
     var endpointOptions = [];
-    var endpointsCount = endpoints.length;
+    var endpointsCount = this.endpoints.length;
     for (var i = 0; i < endpointsCount; i++) {
-        var endpoint = endpoints[i];
+        var endpoint = this.endpoints[i];
         endpointOptions.push({ key: endpoint.url, value: endpoint.name || endpoint.url });
     };
 
@@ -1398,7 +1598,8 @@ OData.explorer.DataExplorer = function (endpoints) {
 
     this.$queryBuilder.append([
         '<div id="queryButtons">',
-            '<button id="submitQuery">Search</button><button id="clearQuery">Reset</button>',
+            '<button id="submitQuery" class="buttonQuery">Search</button>',
+            '<button id="clearQuery" class="buttonQuery">Reset</button>',
         '</div>',
         '<div id="errorMessage" />'].join(''));
     this.$queryButtons = $('#queryButtons', this.$queryBuilder);
@@ -1408,6 +1609,19 @@ OData.explorer.DataExplorer = function (endpoints) {
 
     // Cache of query builders for different URL's.
     this.queryBuilders = [];
+
+    // Set the options.
+    if (this.options.hideOrderbyFilters) {
+        this.$orderByConditions.hide();
+    }
+
+    if (this.options.hideColumnFilters) {
+        this.$selectConditions.hide();
+    }
+
+    if (this.options.hideExpandFilters) {
+        this.$expandConditions.hide();
+    }
 
     // Event handler for updating the metadata model.
     this.$endpoints.change($.proxy(function (event) {
@@ -1479,12 +1693,12 @@ OData.explorer.DataExplorer = function (endpoints) {
 
         if (this.$orderByFiltersList.is(":visible")) {
             // Reset the order by filters when the list is being hidden.
-            this.$orderByFiltersList.children('input[type="checkbox"]').attr('checked', false);
+            this.$orderByFiltersList.find('input[type="checkbox"]').prop('checked', false);
             this.queryBuilder.clearOrderByProperty();
             this.updateUrl(this.queryBuilder.getGeneratedODataQueryUrl());
         }
 
-        this.$orderByConditions.toggleClass('orderByVisible');
+        this.$orderByConditions.toggleClass('listVisible');
     }, this));
 
     // Event handler for adding order by columns.
@@ -1493,6 +1707,54 @@ OData.explorer.DataExplorer = function (endpoints) {
         var propertyId = $e.val();
         var isChecked = +$e.is(':checked'); // The + converts the bool to integer.
         this.queryBuilder.setOrderByProperty(propertyId, isChecked);
+        this.updateUrl(this.queryBuilder.getGeneratedODataQueryUrl());
+    }, this));
+
+    // Event handler for adding select column conditions.
+    this.$addSelectCondition.click($.proxy(function (event) {
+        // Prevent the default behaviour of the button from submitting the form.
+        event.preventDefault();
+
+        if (this.$selectFiltersList.is(":visible")) {
+            // Reset the order by filters when the list is being hidden.
+            this.$selectFiltersList.find('input[type="checkbox"]').prop('checked', false);
+            this.queryBuilder.clearSelectColumnsProperty();
+            this.updateUrl(this.queryBuilder.getGeneratedODataQueryUrl());
+        }
+
+        this.$selectConditions.toggleClass('listVisible');
+    }, this));
+
+    // Event handler for adding select columns.
+    this.$selectFiltersList.on('click', ':input', $.proxy(function (event) {
+        var $e = $(event.target);
+        var propertyId = $e.val();
+        var isChecked = +$e.is(':checked'); // The + converts the bool to integer.
+        this.queryBuilder.setSelectColumnProperty(propertyId, isChecked);
+        this.updateUrl(this.queryBuilder.getGeneratedODataQueryUrl());
+    }, this));
+
+    // Event handler for adding expand conditions.
+    this.$addExpandCondition.click($.proxy(function (event) {
+        // Prevent the default behaviour of the button from submitting the form.
+        event.preventDefault();
+
+        if (this.$expandFiltersList.is(":visible")) {
+            // Reset the order by filters when the list is being hidden.
+            this.$expandFiltersList.find('input[type="checkbox"]').prop('checked', false);
+            this.queryBuilder.clearExpandProperty();
+            this.updateUrl(this.queryBuilder.getGeneratedODataQueryUrl());
+        }
+
+        this.$expandConditions.toggleClass('listVisible');
+    }, this));
+
+    // Event handler for adding expands.
+    this.$expandFiltersList.on('click', ':input', $.proxy(function (event) {
+        var $e = $(event.target);
+        var propertyId = $e.val();
+        var isChecked = +$e.is(':checked'); // The + converts the bool to integer.
+        this.queryBuilder.setExpandProperty(propertyId, isChecked);
         this.updateUrl(this.queryBuilder.getGeneratedODataQueryUrl());
     }, this));
 
@@ -1603,10 +1865,10 @@ OData.explorer.DataExplorer = function (endpoints) {
                 }
             } else {
                 // Only allow navigation recursion to the maximum depth set in the query builder class.
-                var refEntityId = this.queryBuilder.getNavigationPropertyReferringEntityId(entityReferringId, queryProperty.id);
+                var refEntityId = this.queryBuilder.getNavigationPropertyReferringEntityId(entityReferringId, propertyId);
                 var navigationOptions;
                 if (navigationPropertiesNumber >= this.queryBuilder.getMaxNavigationRecursion()) {
-                    navigationOptions = this.queryBuilder.getQueryPropertiesAndNavigationPropertiesForEntity(refEntityId, true);
+                    navigationOptions = this.queryBuilder.getQueryPropertiesForEntity(refEntityId);
                 } else {
                     navigationOptions = this.queryBuilder.getQueryPropertiesAndNavigationPropertiesForEntity(refEntityId);
                 }
@@ -1788,7 +2050,14 @@ OData.explorer.DataExplorer.prototype.addInput = function (classId, appendTo) {
 /// <param name="url">The URL to update the display with.  Defaults to an empty string.</param>
 OData.explorer.DataExplorer.prototype.updateUrl = function (url) {
     url = url || '';
+
+    var urlToBeUpdated = this.getUrl();
     this.$queryUrl.text(url).attr('href', url);
+
+    if (url && this.options.onUrlChange && urlToBeUpdated != url) {
+        // Raise an event
+        this.options.onUrlChange(url);
+    }
 };
 
 /// <summary>Retrieve the displayed URL.</summary>
@@ -1813,6 +2082,7 @@ OData.explorer.DataExplorer.prototype.busy = function (isBusy) {
 /// </summary>
 /// <param name ="error">An error message if there was an error processing the metadata.</param>
 OData.explorer.DataExplorer.prototype.Reset = function (error) {
+    this.$entities.val(-1);
     this.resetQuery();
     this.hideErrorMessage();
 
@@ -1838,13 +2108,19 @@ OData.explorer.DataExplorer.prototype.resetQuery = function (entityIndex) {
     this.updateUrl();
     this.$whereConditions.children('div').remove();
     this.$filtersConditions.hide();
-    this.$orderByConditions.removeClass('orderByVisible');
+    this.$orderByConditions.removeClass('listVisible');
+    this.$selectConditions.removeClass('listVisible');
+    this.$expandConditions.removeClass('listVisible');
     this.$orderByFiltersList.empty();
+    this.$selectFiltersList.empty();
+    this.$expandFiltersList.empty();
     this.$results.empty();
 
     if (this.queryBuilder) {
         this.queryBuilder.emptyWhereFilter();
         this.queryBuilder.clearOrderByProperty();
+        this.queryBuilder.clearSelectColumnsProperty();
+        this.queryBuilder.clearExpandProperty();
         this.queryBuilder.setTop(this.$top.val());
 
         entityIndex = entityIndex || this.$entities.val();
@@ -1853,18 +2129,35 @@ OData.explorer.DataExplorer.prototype.resetQuery = function (entityIndex) {
             this.queryBuilder.setSelectedEntityId(entityIndex);
             this.updateUrl(this.queryBuilder.getGeneratedODataQueryUrl());
             this.$queryUrl.show();
-            
-            // Set up the more filter options.
-            var properties = this.queryBuilder.getQueryPropertiesAndNavigationPropertiesForEntity(
-                this.queryBuilder.getSelectedEntityId(),
-                true);
 
+            // Set up the more filter options.
+            // Add the order by and select conditions (They are the same).
+            var properties = this.queryBuilder.getQueryPropertiesForEntity(this.queryBuilder.getSelectedEntityId());
             for (var i in properties) {
                 var property = properties[i];
-                var htmlId = 'orderby_' + property.key;
-                var $label = $('<label />', { 'for': htmlId, text: property.value });
-                $label.appendTo(this.$orderByFiltersList);
-                $('<input />', { type: 'checkbox', id: htmlId, value: property.key }).prependTo($label);
+
+                // Order by.
+                var orderByHtmlId = 'orderby_' + property.key;
+                var $orderByLabel = $('<label />', { 'for': orderByHtmlId, text: property.value });
+                $orderByLabel.appendTo(this.$orderByFiltersList);
+                $('<input />', { type: 'checkbox', id: orderByHtmlId, value: property.key }).prependTo($orderByLabel);
+
+                // Select column.
+                var selectColumnHtmlId = 'selectcolumn_' + property.key;
+                var $selectColumnLabel = $('<label />', { 'for': selectColumnHtmlId, text: property.value });
+                $selectColumnLabel.appendTo(this.$selectFiltersList);
+                $('<input />', { type: 'checkbox', id: selectColumnHtmlId, value: property.key }).prependTo($selectColumnLabel);
+            };
+
+            var navigationProperties = this.queryBuilder.getQueryNavigationPropertiesForEntity(this.queryBuilder.getSelectedEntityId());
+            for (var i in navigationProperties) {
+                var navigationProperty = navigationProperties[i];
+
+                // Expand.
+                var expandHtmlId = 'expand_' + navigationProperty.key;
+                var $expandLabel = $('<label />', { 'for': expandHtmlId, text: navigationProperty.value });
+                $expandLabel.appendTo(this.$expandFiltersList);
+                $('<input />', { type: 'checkbox', id: selectColumnHtmlId, value: navigationProperty.key }).prependTo($expandLabel);
             };
 
             // Show the filters.
@@ -1895,7 +2188,6 @@ OData.explorer.DataExplorer.prototype.createNewWhereQuery = function () {
         false);
 };
 
-
 /// <summary>
 /// Queries data from the specified URL and passes the results to the results callback handler method.
 /// </summary>
@@ -1903,8 +2195,19 @@ OData.explorer.DataExplorer.prototype.createNewWhereQuery = function () {
 /// <param name ="callback">A callback to call with the data, the calling context will be "this".</param>
 /// <param name ="context">An additional context, besides "this", to pass to the callback.</param>
 OData.explorer.DataExplorer.prototype.queryData = function (url, callback, context) {
+    if (this.options.onSubmit) {
+        var newUrl = this.options.onSubmit(url);
+
+        if (newUrl) {
+            url = newUrl;
+        } else {
+            return;
+        }
+    }
+
     callback = callback || this.resultsCallback;
     var me = this;
+
     this.busy(true);
 
     // First try without jsonp.
@@ -1915,70 +2218,60 @@ OData.explorer.DataExplorer.prototype.queryData = function (url, callback, conte
            callback.call(me, data, context);
        },
        // Error callback.
-       $.proxy(function () {
-            // If it fails try with jsonp.
-            // Set the formatQueryString so that it returns application/json;odata=fullmetadata
-            OData.defaultHttpClient.formatQueryString = '$format=application/json;odata=fullmetadata;';
+       $.proxy(function (err) {
+           // If it fails try with jsonp: 
+           // two calls gets spawn at the same time. The goal is to hopefully to get the 
+           // fullmetadata, however some services returns an error when asked for fullmetadata, and therefore we have 
+           // the fallback.
 
-            OData.read(
-            { requestUri: url, enableJsonpCallback: true, timeoutMS: OData.explorer.constants.queryTimeout },
-            // Success callback.
-            function (data, request) {
-                callback.call(me, data, context);
-            },
-            // Error callback.
-            $.proxy(function (error) {
-                this.showErrorMessage(JSON.stringify(error));
-                this.busy(false);
-            }, this));
+           var correctAjax = 0;
+           var errorsAjax = 0;
+
+           // Error callback.
+           var errorCallback = $.proxy(function (errorFinal) {
+               if (errorsAjax > 0) {
+                   this.showErrorMessage(JSON.stringify(errorFinal));
+                   this.busy(false);
+                   if (this.options.onError) {
+                       this.options.onError(errorFinal, url);
+                   }
+               }
+
+               errorsAjax++;
+           }, this);
+
+           // First Try
+           // Set the formatQueryString so that it returns application/json;odata=fullmetadata
+           OData.defaultHttpClient.formatQueryString = '$format=application/json;odata=fullmetadata;';
+
+           OData.read(
+           { requestUri: url, enableJsonpCallback: true, timeoutMS: OData.explorer.constants.queryTimeout },
+           // Success callback.
+           function (data, request) {
+               correctAjax++;
+               callback.call(me, data, context);
+           },
+           errorCallback);
+
+           // Second Parallel Try
+           OData.defaultHttpClient.formatQueryString = '$format=json';
+
+           OData.read(
+           { requestUri: url, enableJsonpCallback: true, timeoutMS: OData.explorer.constants.queryTimeout },
+           // Success callback.
+           function (data, request) {
+               if (correctAjax == 0) {
+                   correctAjax++;
+                   callback.call(me, data, context);
+               }
+           },
+           errorCallback);
        }, this));
 };
 
 // ------------------------------------------------------------------------------
 // The following functions display the results of the query in the UI.
 // ------------------------------------------------------------------------------
-
-/// <summary>
-/// The results callback handler method for when data has been loaded.
-/// </summary>
-/// <param name ="data">The data from the server.</param>
-OData.explorer.DataExplorer.prototype.resultsCallback = function (data) {
-    try {
-        this.$results.empty();
-        if (data) {
-            var results = this.sanitizeDataFormat(data);
-            this.$results.append(this.createResultsTable(results));
-        } else {
-            this.noResults();
-        }
-    } finally {
-        this.busy(false);
-    }
-};
-
-/// <summary>
-/// Sanitizes the format of the data that has been loaded.
-/// </summary>
-/// <param name ="data">The data from the server.</param>
-OData.explorer.DataExplorer.prototype.sanitizeDataFormat = function (data) {
-    var results;
-
-    // data.results or data should be the only encoding returned by DataJS.
-    if (data.results) {
-        results = data.results;
-    } else if (data.d) {
-        results = data.d.results ? data.d.results : (Array.isArray(data.d) ? data.d : [data.d]);
-    } else if (data.value) {
-        results = data.value;
-    } else if (!Array.isArray(data)) {
-        // DataJS does not return an array if only one element is present.
-        results = [data];
-    } else {
-        throw 'Unknown results format.';
-    }
-
-    return results;
-};
 
 /// <summary>
 /// The results callback handler method for when data has been loaded from a link drop down selection.
@@ -2029,20 +2322,13 @@ OData.explorer.DataExplorer.prototype.linkResultsCallback = function (data, sour
 };
 
 /// <summary>
-/// Shows a message indicating there are no results for an attempted data load query.
-/// </summary>
-OData.explorer.DataExplorer.prototype.noResults = function () {
-    this.showErrorMessage('No results.');
-};
-
-/// <summary>
 /// Generates the display table of the specified data.
 /// </summary>
 /// <param name ="data">The data to generate the display from.</param>
 /// <param name ="title">The title of the table.</param>
 OData.explorer.DataExplorer.prototype.createResultsTable = function (data, title) {
     var me = this;
-    var $table = $('<table />');
+    var $table = $('<table class="defaultResultsFormatting"/>');
     if (data && data.length > 0) {
         var $thead = $('<thead />');
         $table.append($thead);
@@ -2128,6 +2414,70 @@ OData.explorer.DataExplorer.prototype.createResultsTable = function (data, title
     }
 
     return $table;
+};
+
+/// <summary>
+/// Shows a message indicating there are no results for an attempted data load query.
+/// </summary>
+OData.explorer.DataExplorer.prototype.noResults = function () {
+    this.showErrorMessage('No results.');
+};
+
+/// <summary>
+/// The results callback handler method for when data has been loaded.
+/// </summary>
+/// <param name ="data">The data from the server.</param>
+OData.explorer.DataExplorer.prototype.resultsCallback = function (data) {
+    try {
+        this.$results.empty();
+
+        var results = this.sanitizeDataFormat(data);
+        if (this.options.onResults) {
+            // User custom handling.
+            var formattedResults = this.options.onResults(results);
+            if (formattedResults) {
+                this.$results.append(formattedResults);
+            }
+        } else {
+            // Default handling.
+            if (results.length > 0) {
+                this.$results.append(this.createResultsTable(results));
+            } else {
+                // No results.
+                this.noResults();
+            }
+        }
+    } finally {
+        this.busy(false);
+    }
+};
+
+/// <summary>
+/// Sanitizes the format of the data that has been loaded.
+/// </summary>
+/// <param name ="data">The data from the server.</param>
+OData.explorer.DataExplorer.prototype.sanitizeDataFormat = function (data) {
+    var results = [];
+
+    if (!data) {
+        return results;
+    }
+
+    // data.results or data should be the only encoding returned by DataJS.
+    if (data.results) {
+        results = data.results;
+    } else if (data.d) {
+        results = data.d.results ? data.d.results : (Array.isArray(data.d) ? data.d : [data.d]);
+    } else if (data.value) {
+        results = data.value;
+    } else if (!Array.isArray(data)) {
+        // DataJS does not return an array if only one element is present.
+        results = [data];
+    } else {
+        throw 'Unknown results format.';
+    }
+
+    return results;
 };
 
 // Validation namespace.
