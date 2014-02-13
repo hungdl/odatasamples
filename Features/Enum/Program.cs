@@ -18,7 +18,7 @@ namespace ODataSamples.Features.EnumType
 
         static void Main(string[] args)
         {
-            MemoryStream stream = new MemoryStream();
+            Stream stream = new NonClosingStream();
 
             // Create a model with Enum
             // CSDL:
@@ -164,17 +164,18 @@ namespace ODataSamples.Features.EnumType
             writerSettings.AutoComputePayloadMetadataInJson = true;
 
             var responseMessage = new ODataResponseMessage(stream);
-            var messageWriter = new ODataMessageWriter(responseMessage, writerSettings, model);
+            using (var messageWriter = new ODataMessageWriter(responseMessage, writerSettings, model))
+            {
+                IEdmEntitySet entitySet = model.FindDeclaredEntitySet("Products");
+                ODataWriter feedWriter = messageWriter.CreateODataFeedWriter(entitySet);
 
-            IEdmEntitySet entitySet = model.FindDeclaredEntitySet("Products");
-            ODataWriter feedWriter = messageWriter.CreateODataFeedWriter(entitySet);
-
-            var feed = new ODataFeed { Id = new Uri(ServiceRootUri, "Products") };
-            feedWriter.WriteStart(feed);
-            feedWriter.WriteStart(entry);
-            feedWriter.WriteEnd();
-            feedWriter.WriteEnd();
-            feedWriter.Flush();
+                var feed = new ODataFeed { Id = new Uri(ServiceRootUri, "Products") };
+                feedWriter.WriteStart(feed);
+                feedWriter.WriteStart(entry);
+                feedWriter.WriteEnd();
+                feedWriter.WriteEnd();
+                feedWriter.Flush();
+            }
         }
 
         public static IEnumerable<ODataEntry> ReadODataFeed(IEdmModel model, Stream stream)
