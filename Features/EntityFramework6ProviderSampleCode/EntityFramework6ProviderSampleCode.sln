@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeFirstSample", "CodeFirstSample\CodeFirstSample.csproj", "{EF8E0382-D375-4B51-B020-37E2D165569A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBaseFirstSample", "DataBaseFirstSample\DataBaseFirstSample.csproj", "{72F2C0D6-232F-4247-A4AD-25E554967CFB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EF8E0382-D375-4B51-B020-37E2D165569A}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{EF8E0382-D375-4B51-B020-37E2D165569A}.Debug|Any CPU.Build.0 = Release|Any CPU
+		{EF8E0382-D375-4B51-B020-37E2D165569A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF8E0382-D375-4B51-B020-37E2D165569A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72F2C0D6-232F-4247-A4AD-25E554967CFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72F2C0D6-232F-4247-A4AD-25E554967CFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72F2C0D6-232F-4247-A4AD-25E554967CFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72F2C0D6-232F-4247-A4AD-25E554967CFB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
